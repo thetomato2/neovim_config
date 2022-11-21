@@ -1,0 +1,330 @@
+require("thetomato.packer")
+require("thetomato.set")
+require("thetomato.remap")
+require("thetomato.lsp")
+require("thetomato.cmp")
+
+-- set errorformat+=\\\ %#%f(%l\\\,%c):\ %m
+-- set errorformat+=\\\ %#%f(%l\\,%c): %m
+vim.api.nvim_create_user_command("MsvcErrFmt", "set errorformat+=\\\\\\ %#%f(%l\\\\\\,%c):\\ %m", {}
+)
+
+require("mason").setup()
+require("feline").setup()
+
+config = function()
+    require("Comment").setup()
+end
+
+-- require("colorizer").setup()
+
+require("telescope").setup({
+    extensions = {
+        fzf = {
+            fuzzy = true, -- false will only do exact matching
+            override_generic_sorter = true, -- override the generic sorter
+            override_file_sorter = true, -- override the file sorter
+            case_mode = "smart_case", -- or "ignore_case" or "respect_case"
+            -- the default case_mode is "smart_case"
+        },
+    },
+})
+-- To get fzf loaded and working with telescope, you need to call
+-- load_extension, somewhere after setup function:
+require("telescope").load_extension("fzf")
+
+vim.api.nvim_create_autocmd({ "BufEnter", "BufAdd", "BufNew", "BufNewFile", "BufWinEnter" }, {
+    group = vim.api.nvim_create_augroup("TS_FOLD_WORKAROUND", {}),
+    callback = function()
+        vim.opt.foldmethod = "expr"
+        -- vim.opt.foldmethod     = 'manual'
+        vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+    end,
+})
+
+require("nvim-treesitter.install").compilers = { "clang", "gcc" }
+
+require("nvim-treesitter.configs").setup({
+    -- A list of parser names, or "all"
+    ensure_installed = { "c", "lua", "cpp" },
+
+    -- Install parsers synchronously (only applied to `ensure_installed`)
+    sync_install = true,
+
+    -- Automatically install missing parsers when entering buffer
+    auto_install = true,
+
+    -- List of parsers to ignore installing (for "all")
+    -- ignore_install = { "javascript" },
+
+    ---- If you need to change the installation directory of the parsers (see -> Advanced Setup)
+    -- parser_install_dir = "/some/path/to/store/parsers", -- Remember to run vim.opt.runtimepath:append("/some/path/to/store/parsers")!
+
+    highlight = {
+        -- `false` will disable the whole extension
+        enable = true,
+
+        -- NOTE: these are the names of the parsers and not the filetype. (for example if you want to
+        -- disable highlighting for the `tex` filetype, you need to include `latex` in this list as this is
+        -- the name of the parser)
+        -- list of language that will be disabled
+        -- disable = { "c", "rust" },
+
+        -- Setting this to true will run `:h syntax` and tree-sitter at the same time.
+        -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+        -- Using this option may slow down your editor, and you may see some duplicate highlights.
+        -- Instead of true it can also be a list of languages
+        additional_vim_regex_highlighting = false,
+    },
+    -- playground = {
+    -- 	enable = true,
+    -- 	disable = {},
+    -- 	updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+    -- 	persist_queries = false, -- Whether the query persists across vim sessions
+    -- 	keybindings = {
+    -- 		toggle_query_editor = "o",
+    -- 		toggle_hl_groups = "i",
+    -- 		toggle_injected_languages = "t",
+    -- 		toggle_anonymous_nodes = "a",
+    -- 		toggle_language_display = "I",
+    -- 		focus_language = "f",
+    -- 		unfocus_language = "F",
+    -- 		update = "R",
+    -- 		goto_node = "<cr>",
+    -- 		show_help = "?",
+    -- 	},
+    -- },
+    query_linter = {
+        enable = true,
+        use_virtual_text = true,
+        lint_events = { "BufWrite", "CursorHold" },
+    },
+})
+
+require("nvim-tree").setup({
+    filters = {
+        custom = { "^.git$" },
+    },
+    view = {
+        side = "left",
+    },
+})
+
+require("nvim-treesitter.configs").setup({
+    rainbow = {
+        enable = true,
+        extended_mode = true,
+        colors = {
+            "#f56b3d",
+            "#a35aaa",
+            "#8297c0",
+            "#ffdc7a",
+        },
+    },
+})
+
+require("todo-comments").setup({
+    signs = false, -- show icons in the signs column
+    sign_priority = 8, -- sign priority
+    -- keywords recognized as todo comments
+    keywords = {
+        FIX = {
+            icon = " ", -- icon used for the sign, and in search results
+            color = "error", -- can be a hex color, or a named color (see below)
+            alt = { "FIXME", "BUG", "FIXIT", "ISSUE" }, -- a set of other keywords that all map to this FIX keywords
+            -- signs = false, -- configure signs for some keywords individually
+        },
+        TODO = { icon = " ", color = "info" },
+        HACK = { icon = " ", color = "warning" },
+        WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+        PERF = { icon = " ", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
+        NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+        TEST = { icon = "⏲ ", color = "test", alt = { "TESTING", "PASSED", "FAILED" } },
+    },
+    gui_style = {
+        fg = "NONE", -- The gui style to use for the fg highlight group.
+        bg = "BOLD", -- The gui style to use for the bg highlight group.
+    },
+    merge_keywords = true, -- when true, custom keywords will be merged with the defaults
+    -- highlighting of the line containing the todo comment
+    -- * before: highlights before the keyword (typically comment characters)
+    -- * keyword: highlights of the keyword
+    -- * after: highlights after the keyword (todo text)
+    highlight = {
+        before = "", -- "fg" or "bg" or empty
+        keyword = "wide", -- "fg", "bg", "wide", "wide_bg", "wide_fg" or empty. (wide and wide_bg is the same as bg, but will also highlight surrounding characters, wide_fg acts accordingly but with fg)
+        after = "", -- "fg" or "bg" or empty
+        pattern = [[.*<(KEYWORDS)\s*:]], -- pattern or table of patterns, used for highlightng (vim regex)
+        comments_only = true, -- uses treesitter to match keywords in comments only
+        max_line_len = 400, -- ignore lines longer than this
+        exclude = {}, -- list of file types to exclude highlighting
+    },
+    -- list of named colors where we try to extract the guifg from the
+    -- list of highlight groups or use the hex color if hl not found as a fallback
+    colors = {
+        error = { "DiagnosticError", "ErrorMsg", "#DC2626" },
+        warning = { "DiagnosticWarning", "WarningMsg", "#FBBF24" },
+        info = { "DiagnosticInfo", "#2563EB" },
+        hint = { "DiagnosticHint", "#10B981" },
+        default = { "Identifier", "#7C3AED" },
+        test = { "Identifier", "#FF00FF" },
+    },
+    search = {
+        command = "rg",
+        args = {
+            "--color=never",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+        },
+        -- regex that will be used to match keywords.
+        -- don't replace the (KEYWORDS) placeholder
+        pattern = [[\b(KEYWORDS):]], -- ripgrep regex
+        -- pattern = [[\b(KEYWORDS)\b]], -- match without the extra colon. You'll likely get false positives
+    },
+})
+
+require("bqf").setup({
+    auto_enable = true,
+    auto_resize_height = false, -- highly recommended enable
+    preview = {
+        win_height = 12,
+        win_vheight = 12,
+        delay_syntax = 80,
+        border_chars = { "┃", "┃", "━", "━", "┏", "┓", "┗", "┛", "█" },
+        should_preview_cb = function(bufnr, qwinid)
+            local ret = true
+            local bufname = vim.api.nvim_buf_get_name(bufnr)
+            local fsize = vim.fn.getfsize(bufname)
+            if fsize > 100 * 1024 then
+                -- skip file size greater than 100k
+                ret = false
+            elseif bufname:match("^fugitive://") then
+                -- skip fugitive buffer
+                ret = false
+            end
+            return ret
+        end,
+    },
+    -- make `drop` and `tab drop` to become preferred
+    func_map = {
+        drop = "o",
+        openc = "O",
+        split = "<C-s>",
+        tabdrop = "<C-t>",
+        tabc = "",
+        ptogglemode = "z,",
+    },
+    filter = {
+        fzf = {
+            action_for = { ["ctrl-s"] = "split", ["ctrl-t"] = "tab drop" },
+            extra_opts = { "--bind", "ctrl-o:toggle-all", "--prompt", "> " },
+        },
+    },
+})
+
+-- local Path = require("plenary.path")
+-- require("cmake").setup({
+--     cmake_executable = "cmake", -- CMake executable to run.
+--     save_before_build = true, -- Save all buffers before building.
+--     parameters_file = "neovim.json", -- JSON file to store information about selected target, run arguments and build type.
+--     default_parameters = { args = {}, build_type = "Debug" }, -- The default values in `parameters_file`. Can also optionally contain `run_dir` with the working directory for applications.
+--     build_dir = tostring(Path:new("{cwd}", "build")), -- Build directory. The expressions `{cwd}`, `{os}` and `{build_type}` will be expanded with the corresponding text values. Could be a function that return the path to the build directory.
+--     -- samples_path = tostring(script_path:parent():parent():parent() / 'samples'), -- Folder with samples. `samples` folder from the plugin directory is used by default.
+--     default_projects_path = tostring(Path:new(vim.loop.os_homedir(), "Projects")), -- Default folder for creating project.
+--     configure_args = { "-D", "CMAKE_EXPORT_COMPILE_COMMANDS=1" }, -- Default arguments that will be always passed at cmake configure step. By default tells cmake to generate `compile_commands.json`.
+--     build_args = {}, -- Default arguments that will be always passed at cmake build step.
+--     on_build_output = nil, -- Callback that will be called each time data is received by the current process. Accepts the received data as an argument.
+--     quickfix = {
+--         pos = "botright", -- Where to open quickfix
+--         height = 20, -- Height of the opened quickfix.
+--         only_on_error = false, -- Open quickfix window only if target build failed.
+--     },
+--     copy_compile_commands = true, -- Copy compile_commands.json to current working directory.
+--     dap_configurations = { -- Table of different DAP configurations.
+--         lldb_vscode = { type = "lldb", request = "launch" },
+--         cppdbg_vscode = { type = "cppdbg", request = "launch" },
+--     },
+--     dap_configuration = "lldb_vscode", -- DAP configuration to use if the projects `parameters_file` does not specify one.
+--     dap_open_command = function(...)
+--         require("dap").repl.open(...)
+--     end, -- Command to run after starting DAP session. You can set it to `false` if you don't want to open anything or `require('dapui').open` if you are using https://github.com/rcarriga/nvim-dap-ui
+-- })
+
+
+vim.cmd("let &shell = has('win32') ? 'powershell' : 'pwsh'")
+vim.cmd("let &shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'")
+vim.cmd("let &shellredir = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'")
+vim.cmd("let &shellpipe = '2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode'")
+vim.cmd("set shellquote= shellxquote=")
+
+require("toggleterm").setup({
+    size = 10,
+    open_mapping = [[<C-\>]],
+    hide_numbers = true,
+    shade_filetypes = {},
+    shade_terminals = true,
+    shading_factor = 2,
+    start_in_insert = true,
+    insert_mappings = true,
+    persist_size = true,
+    close_on_exit = true,
+    direction = 'float',
+    float_opts = {
+        border = "curved",
+        winblend = 0,
+        highlights = {
+            border = "Normal",
+            background = "Normal"
+        }
+    }
+})
+
+-- require("cmake-tools").setup {
+--   cmake_command = "cmake",
+--   cmake_build_directory = "build",
+--   cmake_generate_options = { "-D", "CMAKE_EXPORT_COMPILE_COMMANDS=1" },
+--   cmake_build_options = {},
+--   cmake_console_size = 10, -- cmake output window height
+--   cmake_show_console = "always", -- "always", "only_on_error"
+--   cmake_dap_configuration = { name = "cpp", type = "codelldb", request = "launch" }, -- dap configuration, optional
+--   cmake_dap_open_command = require("dap").repl.open, -- optional
+--   cmake_variants_message = {
+--     short = { show = true },
+--     long = { show = true, max_length = 40 }
+--   }
+-- }
+
+local Path = require('plenary.path')
+require('tasks').setup({
+    default_params = { -- Default module parameters with which `neovim.json` will be created.
+        cmake = {
+            cmd = 'cmake', -- CMake executable to use, can be changed using `:Task set_module_param cmake cmd`.
+            build_dir = tostring(Path:new('{cwd}', 'build', '{os}-{build_type}')), -- Build directory. The expressions `{cwd}`, `{os}` and `{build_type}` will be expanded with the corresponding text values. Could be a function that return the path to the build directory.
+            build_type = 'Debug', -- Build type, can be changed using `:Task set_module_param cmake build_type`.
+            dap_name = 'lldb', -- DAP configuration name from `require('dap').configurations`. If there is no such configuration, a new one with this name as `type` will be created.
+            args = { -- Task default arguments.
+                configure = { '-D', 'CMAKE_EXPORT_COMPILE_COMMANDS=1', '-G', 'Ninja' },
+            },
+        },
+    },
+    save_before_run = true, -- If true, all files will be saved before executing a task.
+    params_file = 'neovim.json', -- JSON file to store module and task parameters.
+    quickfix = {
+        pos = 'botright', -- Default quickfix position.
+        height = 20, -- Default height.
+    },
+    dap_open_command = function() return require('dap').repl.open() end, -- Command to run after starting DAP session. You can set it to `false` if you don't want to open anything or `require('dapui').open` if you are using https://github.com/rcarriga/nvim-dap-ui
+})
+
+require("thetomato.task")
+
+local Terminal = require('toggleterm.terminal').Terminal
+local node = Terminal:new({ cmd = 'node', hidden = true })
+
+function RUN_NODE()
+    node:toggle()
+end
+
+vim.api.nvim_buf_set_keymap(0, 'n', ';n', '<Cmd>lua RUN_NODE()<CR>', {})
