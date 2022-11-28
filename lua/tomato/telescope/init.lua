@@ -47,6 +47,7 @@ function M.edit_neovim()
   opts_with_preview = {
     prompt_title = "~ dotfiles ~",
     shorten_path = false,
+    -- NOTE: for windows
     cwd = "~/AppData/Local/nvim",
 
     layout_strategy = "flex",
@@ -374,6 +375,15 @@ function M.vim_options()
       width = 0.5,
     },
     sorting_strategy = "ascending",
+  }
+end
+
+function M.registers()
+  require("telescope.builtin").registers {
+    -- layout_config = {
+    --   width = 0.5,
+    -- },
+    -- sorting_strategy = "ascending",
   }
 end
 

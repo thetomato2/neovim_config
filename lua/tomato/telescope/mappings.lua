@@ -72,11 +72,11 @@ if not pcall(require, "telescope") then
   map_tele("<space>ft", "git_files")
   map_tele("<space>fg", "live_grep")
   -- map_tele("<space>fg", "multi_rg")
-  map_tele("<space>fo", "oldfiles")
+  -- map_tele("<space>fo", "oldfiles")
   map_tele("<space>ff", "find_files")
   map_tele("<space>fs", "fs")
   -- map_tele("<space>pp", "project_search")
-  map_tele("<space>fv", "find_nvim_source")
+  -- map_tele("<space>fv", "find_nvim_source")
   map_tele("<space>fe", "file_browser")
   map_tele("<space>fz", "search_only_certain_files")
 
@@ -97,6 +97,7 @@ if not pcall(require, "telescope") then
   map_tele("<space>bo", "vim_options")
   map_tele("<space>gp", "grep_prompt")
   map_tele("<space>wt", "treesitter")
+  map_tele("<space>fr", "registers")
   
   -- Telescope Meta
   map_tele("<space>fB", "builtin")

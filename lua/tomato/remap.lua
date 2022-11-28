@@ -4,6 +4,12 @@ local vmap = require("tomato.keymap").vmap
 
 -- vim.api.nvim_set_keymap("n", "<leader>pv", "<cmd>Ex<CR>")
 
+vim.api.nvim_set_keymap("n", "<leader>y", '"+y', { noremap = true })
+-- vim.api.nvim_set_keymap("i", "<leader>y", '"+y', { noremap = true })
+-- vim.api.nvim_set_keymap("v", "<leader>y", '"+y', { noremap = true })
+
+
+
 vim.api.nvim_set_keymap("n", "<leader>oH", "<cmd>FSSplitLeft<CR>", { noremap = true })
 vim.api.nvim_set_keymap("n", "<leader>oL", "<cmd>FSSplitRight<CR>", { noremap = true })
 vim.api.nvim_set_keymap("n", "<leader>oo", "<cmd>FSHere<CR>", { noremap = true })
@@ -25,7 +31,7 @@ vim.api.nvim_set_keymap("n", "<leader>el", "<cmd>lua vim.diagnostic.setloclist()
 -- vim.api.nvim_set_keymap("n", "<leader>xq", "<cmd>TroubleToggle quickfix<cr>", {noremap = true})
 -- vim.api.nvim_set_keymap("n", "<leader>xl", "<cmd>TroubleToggle loclist<cr>", {noremap = true})
 
-vim.api.nvim_set_keymap("n", "<leader>tt", "<cmd>:NvimTreeToggle<cr>", { noremap = true })
+vim.api.nvim_set_keymap("n", "<leader>tt", "<cmd>:Neotree toggle<cr>", { noremap = true })
 vim.api.nvim_set_keymap("n", "<leader>th", "<cmd>:TSHighlightCapturesUnderCursor<cr>", { noremap = true })
 
 vim.api.nvim_set_keymap("i", "<F2>", '<cmd>lua require("renamer").rename()<cr>', { noremap = true, silent = true })

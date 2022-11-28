@@ -1,2 +1,3 @@
-vim.cmd("colorscheme tomato")
+vim.cmd("colorscheme tomato_theme")
+-- vim.cmd("colorscheme gruvbox")
 

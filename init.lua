@@ -18,6 +18,8 @@ end
 
 if vim.g.neovide then
 	require("tomato.neovide")
+else
+    vim.opt.termguicolors = true
 end
 
 vim.g.mapleader = " "
